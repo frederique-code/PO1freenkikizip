@@ -1,18 +1,15 @@
-function preLoad() {
-  raket = loadImage("PAARSERAKET.png")
-}
+var pingPongX = null;
+var pingPongY = null;
+var pingPongVx = 50;
+var pingPongVy = 20;
+var levens = 3;
+
 
 class Raster {
   constructor(r,k) {
     this.aantalRijen = r;
     this.aantalKolommen = k;
     this.celGrootte = null;
-  }
-
-  class Raket {
-    constructor () {
-      
-      }
   }
 
   berekenCelGrootte() {
@@ -41,21 +38,21 @@ class Jos {
     this.stapGrootte = null;
     this.gehaald = false;
   }
-
+  
   beweeg() {
-    if (keyIsDown(LEFT_ARROW)) {
+    if (keyIsDown(65)) {
       this.x -= this.stapGrootte;
       this.frameNummer = 2;
     }
-    if (keyIsDown(RIGHT_ARROW)) {
+    if (keyIsDown(68)) {
       this.x += this.stapGrootte;
       this.frameNummer = 1;
     }
-    if (keyIsDown(UP_ARROW)) {
+    if (keyIsDown(87)) {
       this.y -= this.stapGrootte;
       this.frameNummer = 4;
     }
-    if (keyIsDown(DOWN_ARROW)) {
+    if (keyIsDown(83)) {
       this.y += this.stapGrootte;
       this.frameNummer = 5;
     }
@@ -76,7 +73,6 @@ class Jos {
       return false;
     }
   }
-
   toon() {
     image(this.animatie[this.frameNummer],this.x,this.y,raster.celGrootte,raster.celGrootte);
   }
@@ -112,7 +108,7 @@ function setup() {
   canvas.parent();
   frameRate(10);
   textFont("Verdana");
-  textSize(90);
+  //textSize(90);
 
   raster = new Raster(6,9);
 
@@ -132,6 +128,11 @@ function setup() {
   bob = new Vijand(600,400);
   bob.stapGrootte = 1*eve.stapGrootte;
   bob.sprite = loadImage("images/sprites/Bob100px/Bob.png");  
+
+  cindy = new Vijand(700,200);
+  cindy.stapGrootte = 1*eve.stapGrootte;
+  cindy.sprite = loadImage("images/sprites/Alice100px/Alice.png");
+
 }
 
 function draw() {
@@ -140,17 +141,51 @@ function draw() {
   eve.beweeg();
   alice.beweeg();
   bob.beweeg();
+  cindy.beweeg();
+  
   eve.toon();
   alice.toon();
   bob.toon();
+  cindy.toon();
+  
 
-  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob)) {
+  pingPongX += pingPongVx;
+  pingPongY += pingPongVy;
+  pingPongBal = ellipse(pingPongX,pingPongY,50)
+  
+  if (pingPongX == width || pingPongX == 0) {
+    pingPongVx *= -1;
+  }
+  if (pingPongY == height || pingPongY == 0) {
+    pingPongVy *= -1;
+  }
+
+  if (pingPongX == eve.x && pingPongY == eve.y) {
+    pingPongVx *= -1;
+    levens += 1;
+  }
+  
+  
+  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(cindy)) {
+    levens -= 1
+  }
+
+  textSize(20);
+  text('levens: ' + levens, 10, 20);
+ 
+  
+  if (levens < 1) {
+    background('red');
+    fill('black');
+    textSize(90);
+    text("Je bent dood!",30,300);
     noLoop();
   }
 
   if (eve.gehaald) {
     background('green');
     fill('white');
+    textSize(90);
     text("Je hebt gewonnen!",30,300);
     noLoop();
   }
