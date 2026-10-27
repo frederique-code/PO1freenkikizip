@@ -2,22 +2,45 @@ var pingPongX = null;
 var pingPongY = null;
 var pingPongVx = 50;
 var pingPongVy = 20;
+var pingPongBal = null;
 var levens = 3;
 var aantalLagen = 5;
-var breedte = 90;
+var breedte = 70;
 var hoogte;
 var plekkenRaket = [500, 600, 700, 800]
 
+function pingPong() {
+    pingPongX += pingPongVx;
+    pingPongY += pingPongVy;
+    push();
+    fill('violet')
+    pingPongBal = ellipse(pingPongX,pingPongY,50)
+    pop();
+
+    if (pingPongX == width || pingPongX == 0) {
+      pingPongVx *= -1;
+    }
+    if (pingPongY == height || pingPongY == 0) {
+      pingPongVy *= -1;
+    }
+  //eve en de pingpongbal
+    if ( eve.x <= pingPongX + 0.5*raster.celGrootte && eve.x >= pingPongX - 0.5*raster.celGrootte && eve.y <= pingPongY + 0.5*raster.celGrootte && eve.y >= pingPongY- 0.5*raster.celGrootte) {
+      levens += 1;
+    }
+}
 
 function tekenPiramide(n) {
+  push();
+  fill('purple');
   if (n>0) {
     for (var nr = 0;nr < n;nr++) {
-      rect(nr*breedte,400,breedte,hoogte);
+      rect(275+nr*breedte,200,breedte,hoogte);
     }
-    translate(breedte / 2,-hoogte);
+    translate(breedte / 2,hoogte);
     n--;
     tekenPiramide(n);
   }
+  pop()
 }
 
 //checken of je nog leeft
@@ -162,7 +185,7 @@ function setup() {
   canvas.parent();
   frameRate(10);
   textFont("Verdana");
-
+  
 
 //priamide
   hoogte = breedte/2;
@@ -204,7 +227,13 @@ function setup() {
 
 function draw() {
   background(brug);
+    // priamide
+  push();
+  tekenPiramide(aantalLagen);
+  pop();
+  
   raster.teken();
+ 
   eve.beweeg();
   alice.beweeg();
   bob.beweeg();
@@ -221,7 +250,7 @@ function draw() {
   bob.toon();
   cindy.toon();
 
-
+/*
 //pingpongbal
   pingPongX += pingPongVx;
   pingPongY += pingPongVy;
@@ -238,6 +267,10 @@ function draw() {
     pingPongVx *= -1;
     levens += 1;
   }
+*/
+
+
+pingPong();
   
 //eve en de vijanden  
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(cindy)) {
@@ -277,9 +310,8 @@ function draw() {
     text("Je hebt gewonnen!",30,300);
     noLoop();
   }
-
-  // priamide
-  //tekenPiramide(aantalLagen);
+ 
+ 
 
 }
 
