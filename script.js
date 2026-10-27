@@ -3,7 +3,32 @@ var pingPongY = null;
 var pingPongVx = 50;
 var pingPongVy = 20;
 var levens = 3;
+var aantalLagen = 5;
+var breedte = 90;
+var hoogte;
+var plekkenRaket = [500, 600, 700, 800]
 
+
+function tekenPiramide(n) {
+  if (n>0) {
+    for (var nr = 0;nr < n;nr++) {
+      rect(nr*breedte,400,breedte,hoogte);
+    }
+    translate(breedte / 2,-hoogte);
+    n--;
+    tekenPiramide(n);
+  }
+}
+
+//checken of je nog leeft
+function dood(levens) {
+  if (levens < 1) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
 
 class Raster {
   constructor(r,k) {
@@ -73,6 +98,7 @@ class Jos {
       return false;
     }
   }
+
   toon() {
     image(this.animatie[this.frameNummer],this.x,this.y,raster.celGrootte,raster.celGrootte);
   }
@@ -99,6 +125,34 @@ class Vijand {
   }
 }
 
+class Raket {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+    this.sprite = null;
+    this.stapGrootte = null;
+    this.snelheid;
+  }
+  
+  beweeg() {
+    this.snelheid -= 9.81/30;
+    this.y -= this.snelheid;
+
+    if (this.y <= 0) {
+      this.snelheid *= -1;
+    }
+
+    if ( this.y >= 400 ){
+      this.snelheid *= -1;
+    }
+    
+  }
+
+  toon() {
+    image(this.sprite,this.x,this.y,raster.celGrootte,2*raster.celGrootte);
+  }
+}
+
 function preload() {
   brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
 }
@@ -108,19 +162,21 @@ function setup() {
   canvas.parent();
   frameRate(10);
   textFont("Verdana");
-  //textSize(90);
 
-  raster = new Raster(6,9);
 
+//priamide
+  hoogte = breedte/2;
+//raster  
+  raster = new Raster(12,18);
   raster.berekenCelGrootte();
-
+//eve
   eve = new Jos();
   eve.stapGrootte = 1*raster.celGrootte;
   for (var b = 0;b < 6;b++) {
     frameEve = loadImage("images/sprites/Eve100px/Eve_" + b + ".png");
     eve.animatie.push(frameEve);
   }
-
+//vijanden
   alice = new Vijand(700,200);
   alice.stapGrootte = 1*eve.stapGrootte;
   alice.sprite = loadImage("images/sprites/Alice100px/Alice.png");
@@ -132,7 +188,18 @@ function setup() {
   cindy = new Vijand(700,200);
   cindy.stapGrootte = 1*eve.stapGrootte;
   cindy.sprite = loadImage("images/sprites/Alice100px/Alice.png");
+//raketten
+  raket1 = new Raket(random(plekkenRaket), 400);
+  raket1.sprite = loadImage("images/PAARSERAKET.png");
+  raket1.snelheid = 20;
 
+  raket2 = new Raket(random(plekkenRaket), 400);
+  raket2.sprite = loadImage("images/PAARSERAKET.png");
+  raket2.snelheid = 30;
+
+  raket3 = new Raket(random(plekkenRaket), 400);
+  raket3.sprite = loadImage("images/PAARSERAKET.png");
+  raket3.snelheid = 40;
 }
 
 function draw() {
@@ -142,13 +209,20 @@ function draw() {
   alice.beweeg();
   bob.beweeg();
   cindy.beweeg();
-  
+  raket1.beweeg();
+  raket2.beweeg();
+  raket3.beweeg();
+
+  raket1.toon(); 
+  raket2.toon();
+  raket3.toon();
   eve.toon();
   alice.toon();
   bob.toon();
   cindy.toon();
-  
 
+
+//pingpongbal
   pingPongX += pingPongVx;
   pingPongY += pingPongVy;
   pingPongBal = ellipse(pingPongX,pingPongY,50)
@@ -159,26 +233,40 @@ function draw() {
   if (pingPongY == height || pingPongY == 0) {
     pingPongVy *= -1;
   }
-
-  if (pingPongX == eve.x && pingPongY == eve.y) {
+//eve en de pingpongbal
+  if ( eve.x <= pingPongX + 0.5*raster.celGrootte && eve.x >= pingPongX - 0.5*raster.celGrootte && eve.y <= pingPongY + 0.5*raster.celGrootte && eve.y >= pingPongY- 0.5*raster.celGrootte) {
     pingPongVx *= -1;
     levens += 1;
   }
   
-  
+//eve en de vijanden  
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(cindy)) {
-    levens -= 1
+    levens -= 1;
   }
 
+//eve en de raketten
+    if ( eve.x <= raket1.x + 0.5*raster.celGrootte && eve.x >= raket1.x - 0.5*raster.celGrootte && eve.y <= raket1.y + 0.5*raster.celGrootte && eve.y >= raket1.y - 0.5*raster.celGrootte ) {
+      levens -= 1;
+    }
+
+  if ( eve.x <= raket2.x + 0.5*raster.celGrootte && eve.x >= raket2.x - 0.5*raster.celGrootte && eve.y <= raket2.y + 0.5*raster.celGrootte && eve.y >= raket2.y - 0.5*raster.celGrootte ) {
+    levens -= 1;
+  }
+
+  if ( eve.x <= raket3.x + 0.5*raster.celGrootte && eve.x >= raket3.x - 0.5*raster.celGrootte && eve.y <= raket3.y + 0.5*raster.celGrootte && eve.y >= raket3.y - 0.5*raster.celGrootte ) {
+    levens -= 1;
+  }
+
+//healthbar  
   textSize(20);
   text('levens: ' + levens, 10, 20);
- 
-  
-  if (levens < 1) {
+
+//einde spel
+  if (dood(levens)) {
     background('red');
     fill('black');
     textSize(90);
-    text("Je bent dood!",30,300);
+    text("Je bent dood :(",30,300);
     noLoop();
   }
 
@@ -189,4 +277,9 @@ function draw() {
     text("Je hebt gewonnen!",30,300);
     noLoop();
   }
+
+  // priamide
+  //tekenPiramide(aantalLagen);
+
 }
+
