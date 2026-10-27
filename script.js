@@ -1,3 +1,5 @@
+//VARIABELEN
+
 var pingPongX = null;
 var pingPongY = null;
 var pingPongVx = 50;
@@ -7,31 +9,63 @@ var levens = 3;
 var aantalLagen = 5;
 var breedte = 70;
 var hoogte;
-var plekkenRaket = [500, 600, 700, 800]
+var plekkenRaket = [500, 600, 700, 800];
+var achtergrondKleur;
 
+//FUNCTIES ( door ons )
+
+//functie voor het raken van de rand met de cursor
+function raaktRand() {
+   if ( mouseX <= 50 || mouseX >= 850 || mouseY <= 50 || mouseY >= 550 ) {
+    achtergrondKleur = 'pink';
+    }
+    else {
+    achtergrondKleur = 'violet';
+    }
+}
+
+//functie voor interactie raketten en eve ( met een hitbox die een halve celgrootte)
+function eveRaaktRaketten() {
+    //raket1
+  if ( eve.x <= raket1.x + 0.5*raster.celGrootte && eve.x >= raket1.x - 0.5*raster.celGrootte && eve.y <= raket1.y + 0.5*raster.celGrootte && eve.y >= raket1.y - 0.5*raster.celGrootte ) {
+    levens -= 1;
+  }
+    //raket2
+    if ( eve.x <= raket2.x + 0.5*raster.celGrootte && eve.x >= raket2.x - 0.5*raster.celGrootte && eve.y <= raket2.y + 0.5*raster.celGrootte && eve.y >= raket2.y - 0.5*raster.celGrootte ) {
+  levens -= 1;
+  }
+    //raket3
+    if ( eve.x <= raket3.x + 0.5*raster.celGrootte && eve.x >= raket3.x - 0.5*raster.celGrootte && eve.y <= raket3.y + 0.5*raster.celGrootte && eve.y >= raket3.y - 0.5*raster.celGrootte ) {
+  levens -= 1;
+  }
+}
+
+//functie voor de pingpongbal
 function pingPong() {
+    //tekenen van de pingpongbal
     pingPongX += pingPongVx;
     pingPongY += pingPongVy;
     push();
-    fill('violet')
+    fill('violet') //pingpongbal is lichtpaars :) 
     pingPongBal = ellipse(pingPongX,pingPongY,50)
     pop();
-
+    //zorgen dat de pingpongbal tegen de randen stuitert
     if (pingPongX == width || pingPongX == 0) {
       pingPongVx *= -1;
     }
     if (pingPongY == height || pingPongY == 0) {
       pingPongVy *= -1;
     }
-  //eve en de pingpongbal
+    //interactie eve en de pingpongbal, met een hitbox die een halve celgrootte om het middenpunt van de cirkel heengaat
     if ( eve.x <= pingPongX + 0.5*raster.celGrootte && eve.x >= pingPongX - 0.5*raster.celGrootte && eve.y <= pingPongY + 0.5*raster.celGrootte && eve.y >= pingPongY- 0.5*raster.celGrootte) {
       levens += 1;
     }
 }
 
+//functie voor de piramide, gebaseerd op / aangepaste versie van opdr36 uit h1
 function tekenPiramide(n) {
   push();
-  fill('purple');
+  fill('purple'); //onze piramide is paars :) 
   if (n>0) {
     for (var nr = 0;nr < n;nr++) {
       rect(275+nr*breedte,200,breedte,hoogte);
@@ -43,7 +77,7 @@ function tekenPiramide(n) {
   pop()
 }
 
-//checken of je nog leeft
+//checken of je nog leeft met parameter 'levens'
 function dood(levens) {
   if (levens < 1) {
     return true;
@@ -53,6 +87,9 @@ function dood(levens) {
   }
 }
 
+//CLASSES
+
+//class voor het raster
 class Raster {
   constructor(r,k) {
     this.aantalRijen = r;
@@ -70,13 +107,22 @@ class Raster {
     stroke('grey');
     for (var rij = 0;rij < this.aantalRijen;rij++) {
       for (var kolom = 0;kolom < this.aantalKolommen;kolom++) {
-        rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte);
+        if ( rij == 0 || rij == 11 || kolom == 0 || kolom == 17) {
+          fill('lightblue'); //randkleur
+          rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte);
+        }
+        else{ 
+          fill(achtergrondKleur) //kleur van de rest van het veld
+          rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte); 
+        }
       }
     }
     pop();
   }
+  
 }
 
+//class voor jos ( aka het speelbare karakter )
 class Jos {
   constructor() {
     this.x = 400;
@@ -127,6 +173,7 @@ class Jos {
   }
 }  
 
+//class voor de vijand
 class Vijand {
   constructor(x,y) {
     this.x = x;
@@ -148,6 +195,7 @@ class Vijand {
   }
 }
 
+//class voor de raket
 class Raket {
   constructor(x,y) {
     this.x = x;
@@ -158,7 +206,7 @@ class Raket {
   }
   
   beweeg() {
-    this.snelheid -= 9.81/30;
+    this.snelheid -= 9.81/30; //valversnelling !
     this.y -= this.snelheid;
 
     if (this.y <= 0) {
@@ -176,8 +224,10 @@ class Raket {
   }
 }
 
+//FUNCTIES ( die er al waren )
+
 function preload() {
-  brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg");
+  //brug = loadImage("images/backgrounds/dame_op_brug_1800.jpg"); 
 }
 
 function setup() {
@@ -185,21 +235,23 @@ function setup() {
   canvas.parent();
   frameRate(10);
   textFont("Verdana");
-  
 
-//priamide
+  //dit is deel van de piramide
   hoogte = breedte/2;
-//raster  
+  
+  //raster  
   raster = new Raster(12,18);
   raster.berekenCelGrootte();
-//eve
+  
+  //eve
   eve = new Jos();
   eve.stapGrootte = 1*raster.celGrootte;
   for (var b = 0;b < 6;b++) {
     frameEve = loadImage("images/sprites/Eve100px/Eve_" + b + ".png");
     eve.animatie.push(frameEve);
   }
-//vijanden
+  
+  //vijanden
   alice = new Vijand(700,200);
   alice.stapGrootte = 1*eve.stapGrootte;
   alice.sprite = loadImage("images/sprites/Alice100px/Alice.png");
@@ -211,7 +263,8 @@ function setup() {
   cindy = new Vijand(700,200);
   cindy.stapGrootte = 1*eve.stapGrootte;
   cindy.sprite = loadImage("images/sprites/Alice100px/Alice.png");
-//raketten
+  
+  //raketten
   raket1 = new Raket(random(plekkenRaket), 400);
   raket1.sprite = loadImage("images/PAARSERAKET.png");
   raket1.snelheid = 20;
@@ -226,14 +279,15 @@ function setup() {
 }
 
 function draw() {
-  background(brug);
-    // priamide
+  raaktRand();
+  raster.teken();
+
+  // priamide aanroepen
   push();
   tekenPiramide(aantalLagen);
   pop();
   
-  raster.teken();
- 
+  //karakter, vijanden en raketten in beweging zetten
   eve.beweeg();
   alice.beweeg();
   bob.beweeg();
@@ -242,59 +296,32 @@ function draw() {
   raket2.beweeg();
   raket3.beweeg();
 
-  raket1.toon(); 
-  raket2.toon();
-  raket3.toon();
+  //karakter, vijanden en raketten op beeld zetten
   eve.toon();
   alice.toon();
   bob.toon();
   cindy.toon();
+  raket1.toon(); 
+  raket2.toon();
+  raket3.toon();
 
-/*
-//pingpongbal
-  pingPongX += pingPongVx;
-  pingPongY += pingPongVy;
-  pingPongBal = ellipse(pingPongX,pingPongY,50)
+  //pingpongbal aanroepen
+  pingPong();
   
-  if (pingPongX == width || pingPongX == 0) {
-    pingPongVx *= -1;
-  }
-  if (pingPongY == height || pingPongY == 0) {
-    pingPongVy *= -1;
-  }
-//eve en de pingpongbal
-  if ( eve.x <= pingPongX + 0.5*raster.celGrootte && eve.x >= pingPongX - 0.5*raster.celGrootte && eve.y <= pingPongY + 0.5*raster.celGrootte && eve.y >= pingPongY- 0.5*raster.celGrootte) {
-    pingPongVx *= -1;
-    levens += 1;
-  }
-*/
-
-
-pingPong();
-  
-//eve en de vijanden  
+  //interactie eve en de vijanden  
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(cindy)) {
     levens -= 1;
   }
 
-//eve en de raketten
-    if ( eve.x <= raket1.x + 0.5*raster.celGrootte && eve.x >= raket1.x - 0.5*raster.celGrootte && eve.y <= raket1.y + 0.5*raster.celGrootte && eve.y >= raket1.y - 0.5*raster.celGrootte ) {
-      levens -= 1;
-    }
+  //eve en de raketten
+  eveRaaktRaketten();
 
-  if ( eve.x <= raket2.x + 0.5*raster.celGrootte && eve.x >= raket2.x - 0.5*raster.celGrootte && eve.y <= raket2.y + 0.5*raster.celGrootte && eve.y >= raket2.y - 0.5*raster.celGrootte ) {
-    levens -= 1;
-  }
-
-  if ( eve.x <= raket3.x + 0.5*raster.celGrootte && eve.x >= raket3.x - 0.5*raster.celGrootte && eve.y <= raket3.y + 0.5*raster.celGrootte && eve.y >= raket3.y - 0.5*raster.celGrootte ) {
-    levens -= 1;
-  }
-
-//healthbar  
+  //healthbar  
   textSize(20);
   text('levens: ' + levens, 10, 20);
 
-//einde spel
+  //einde spel
+      //verliezen
   if (dood(levens)) {
     background('red');
     fill('black');
@@ -302,7 +329,7 @@ pingPong();
     text("Je bent dood :(",30,300);
     noLoop();
   }
-
+      //winnen
   if (eve.gehaald) {
     background('green');
     fill('white');
@@ -310,8 +337,6 @@ pingPong();
     text("Je hebt gewonnen!",30,300);
     noLoop();
   }
- 
- 
 
 }
 
